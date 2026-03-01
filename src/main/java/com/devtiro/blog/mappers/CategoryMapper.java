@@ -1,0 +1,32 @@
+package com.devtiro.blog.mappers;
+
+import com.devtiro.blog.domain.dto.CategoryDto;
+import com.devtiro.blog.domain.dto.CreateCategoryRequest;
+import com.devtiro.blog.domain.entity.Category;
+import com.devtiro.blog.domain.entity.Post;
+import com.devtiro.blog.domain.PostStatus;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Named;
+import org.mapstruct.ReportingPolicy;
+
+import java.util.List;
+
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+public interface CategoryMapper {
+
+    @Mapping(target = "postCount", source = "posts", qualifiedByName = "calculatePostCount")
+    CategoryDto toDto(Category category);
+
+    Category toEntity(CreateCategoryRequest createCategoryRequest);
+
+    @Named("calculatePostCount")
+    default long calculatePostCount(List<Post> posts) {
+        if (posts == null) {
+            return 0;
+        }
+        return posts.stream()
+                .filter(post -> PostStatus.PUBLISHED.equals(post.getStatus()))
+                .count();
+    }
+}
